@@ -1,0 +1,84 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: 'verdana';
+	font-size: 14px;
+}
+
+#wrapper {
+	display: flex;
+	height: 100vh;
+	width: 100vw;
+}
+
+.server {
+	flex: 1;
+	overflow: auto; 
+}
+
+.server:not(:first-child) {
+	border-left: 2px ridge #FFF;
+}
+
+.server>h2 {
+	text-align: center;
+	border-bottom: 1px solid black;
+	background-color: #EEE;
+	margin: 0;
+}
+
+.server .content {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.server .content>li {
+	min-height: 20px;
+	line-height: 20px;
+	border-bottom: 1px solid #000;
+	padding: 5px;
+	background-color: #EEE;
+	cursor: pointer;
+}
+.server .content>li:first-child {
+	border-top: 1px solid black;
+}
+.server .content>li:nth-child(2n+1) {
+	background-color: #DDD;
+}
+.server .content>li pre {
+	margin: 0;
+	overflow: hidden;
+	cursor: auto;
+	color: #000;
+	font-weight: normal;
+	margin: 20px;
+	background-color: #FFF;
+	padding: 5px;
+	border: 1px solid #888;
+	overflow-x: auto;
+}
+
+.server .content>li.minor {
+	color: #888;
+}
+.server .content>li.standard {
+	color: #C4C;
+}
+.server .content>li.critical {
+	color: #F00;
+	font-weight: bold;
+}
+
+.filterbar {
+	padding: 10px;
+	display: flex;
+}
+
+.filterbar * {
+	flex: 1;
+}
+.filterbar *:not(:first-child) {
+	margin-left: 10px;
+}
