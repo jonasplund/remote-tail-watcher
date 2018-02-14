@@ -1,6 +1,6 @@
 const SOLIDAR_IT_WORKERS = ['Kristoffer Karlsson', 'Victor Jonsson', 'Jon Asplund', 'David Öberg'];
 
-const errorLevels = {
+const ErrorLevels = {
 	MINOR: ['BANKID', 'SQL_SILENT'],
 	STANDARD: ['INDIVIDUAL_FOLKSAM_STATUS_10'],
 	CRITICAL: ['PAGE_MASTER_FATAL', 'SUMMARY', 'INVOICE_CREATOR', 'JAYCOM_PULL', 'FATAL']
@@ -184,8 +184,8 @@ class PhpError {
 
 	addErrorLevelClass() {
 		let errorLevel;
-		Object.keys(errorLevels).forEach(key => {
-			if (errorLevels[key].indexOf(this.type) > -1) {
+		Object.keys(ErrorLevels).forEach(key => {
+			if (ErrorLevels[key].indexOf(this.type) > -1) {
 				errorLevel = key;
 			}
 		});
