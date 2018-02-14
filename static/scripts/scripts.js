@@ -86,7 +86,7 @@ class Server {
 		this.node.querySelectorAll('li').forEach(li => list.removeChild(li));
 	}
 
-	consumeLogMessageNew(message) {
+	consumeLogMessage(message) {
 		this.clearList();
 		const messageJson = JSON.parse(message);
 		messageJson.forEach(error => this.errors.push(new PhpError(error)));
@@ -96,40 +96,6 @@ class Server {
 			const unique = this.errors.map(item => item.type).filter((value, index, self) => self.indexOf(value) === index);
 			this.populateSelect(unique);				
 		}
-	}
-
-	consumeLogMessage(message) {
-		this.buffer = this.buffer + message;
-		this.parsePhpErrors();
-		this.clearList();
-		this.errors.sort((a, b) => a.dateTime - b.dateTime);
-		this.errors.forEach(error => this.node.appendChild(error.node));
-		if (this.errors) {
-			const unique = this.errors.map(item => item.type).filter((value, index, self) => self.indexOf(value) === index);
-			this.populateSelect(unique);				
-		}
-	}
-
-	parsePhpErrors() {
-		const regExp = /(\[\d{2}-[a-zA-Z]{3}-\d{4} \d{2}:\d{2}:\d{2})(?:.*\])\s*(<BB_ERROR(?:_[A-Z_0-9]+)?>)([^<]*)<\/BB_ERROR(?:_[A-Z_0-9]+)?>/g;
-		this.errors = new PhpErrors();
-		let partialResult;
-		while ((partialResult = regExp.exec(this.buffer)) !== null) {
-			let exceptionClass;
-			let type = partialResult[2].replace('<BB_ERROR_', '').replace('<BB_ERROR', 'UNCLASSIFIED').replace('>', '');
-			const m = partialResult[3].match(/Exception class: (.*)/);
-			if (m) {
-				exceptionClass = m[1].split('\\');
-				exceptionClass = exceptionClass[exceptionClass.length - 1];
-			}
-			this.errors.push(new PhpError({
-				time: partialResult[1] + ']',
-				type: type,
-				details: partialResult[3].trim(),
-				exceptionClass: exceptionClass
-			}));
-		}
-		return this.errors;
 	}
 
 	set gitBranch(branch) {
@@ -144,28 +110,13 @@ class PhpErrors extends Array {
 }
 
 class PhpError {
-	constructorNew(data) {
+	constructor(data) {
 		this.full = data.full;
 		this.dateTime = new Date(data.dateTime);
 		this.type = data.type;
 		this.details = data.details;
 		this.exceptionClass = data.exceptionClass;
 		this.userName = data.userName;
-		this.node = this.createListElement();
-		this.addErrorLevelClass();
-	}
-
-	constructor(data) {
-		const dateStr = data.time.replace(/[\[\]]/g, '');
-		this.full = data.full;
-		this.dateTime = new Date(dateStr);
-		this.type = data.type;
-		this.details = data.details;
-		this.exceptionClass = data.exceptionClass;
-		const userName = data.details.match(/Uname: (.*)/);
-		if (userName) {
-			this.userName = userName[1];
-		}
 		this.node = this.createListElement();
 		this.addErrorLevelClass();
 	}
