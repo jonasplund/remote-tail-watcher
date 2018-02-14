@@ -17,7 +17,7 @@ html, body {
 }
 
 .server:not(:first-child) {
-	border-left: 2px ridge #FFF;
+	border-left: 1px solid #000;
 }
 
 .server>h2 {

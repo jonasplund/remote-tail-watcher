@@ -3,16 +3,14 @@ const SOLIDAR_IT_WORKERS = ['Kristoffer Karlsson', 'Victor Jonsson', 'Jon Asplun
 const errorLevels = {
 	MINOR: ['BANKID', 'SQL_SILENT'],
 	STANDARD: ['INDIVIDUAL_FOLKSAM_STATUS_10'],
-	CRITICAL: ['PAGE_MASTER_FATAL', 'SUMMARY', 'INVOICE_CREATOR', 'JAYCOM_PULL']
+	CRITICAL: ['PAGE_MASTER_FATAL', 'SUMMARY', 'INVOICE_CREATOR', 'JAYCOM_PULL', 'FATAL']
 };
 
 class App {
 	constructor() {
 		this.ws = new WebSocket(location.origin.replace(/^https?/, 'ws'));
 
-		this.buffer = '';
-
-		const environments = [{
+		const environmentsConfig = [{
 				name: 'prod',
 				node: document.querySelector('#prod .content'),
 				search: document.querySelector('#prod .search'),
@@ -27,7 +25,7 @@ class App {
 			}
 		];
 
-		this.servers = environments.map(env => new Server(env));
+		this.servers = environmentsConfig.map(env => new Server(env));
 
 		this.initEvents();
 	}
@@ -88,6 +86,18 @@ class Server {
 		this.node.querySelectorAll('li').forEach(li => list.removeChild(li));
 	}
 
+	consumeLogMessageNew(message) {
+		this.clearList();
+		const messageJson = JSON.parse(message);
+		messageJson.forEach(error => this.errors.push(new PhpError(error)));
+		this.errors.sort((a, b) => a.dateTime - b.dateTime);
+		this.errors.forEach(error => this.node.appendChild(error.node));
+		if (this.errors) {
+			const unique = this.errors.map(item => item.type).filter((value, index, self) => self.indexOf(value) === index);
+			this.populateSelect(unique);				
+		}
+	}
+
 	consumeLogMessage(message) {
 		this.buffer = this.buffer + message;
 		this.parsePhpErrors();
@@ -134,8 +144,20 @@ class PhpErrors extends Array {
 }
 
 class PhpError {
+	constructorNew(data) {
+		this.full = data.full;
+		this.dateTime = new Date(data.dateTime);
+		this.type = data.type;
+		this.details = data.details;
+		this.exceptionClass = data.exceptionClass;
+		this.userName = data.userName;
+		this.node = this.createListElement();
+		this.addErrorLevelClass();
+	}
+
 	constructor(data) {
 		const dateStr = data.time.replace(/[\[\]]/g, '');
+		this.full = data.full;
 		this.dateTime = new Date(dateStr);
 		this.type = data.type;
 		this.details = data.details;

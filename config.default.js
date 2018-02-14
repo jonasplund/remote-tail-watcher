@@ -1,21 +1,30 @@
 module.exports = {
 	port: 3001,
 	localPhpErrors: 'C:\\webserver\\logs\\php_errors.log',
-	remotes: [{
+	pollTime: 60,
+	listeners: [{
 		name: 'prod',
 		ipNumber: '192.168.110.2',
-		adminUser: {
-			url: 'https://admin.solidarfond.se',
+		admin: {
+			url: 'admin.solidarfond.se',
 			username: '__USERNAME__',
 			password: '__PASSWORD__' 
 		},
+		features: {
+			gitBranch: true,
+			remoteTail: true
+		}
 	}, {
 		name: 'demo2',
 		ipNumber: '192.168.10.21',
 		admin: {
-			url: 'https://test2-admin.solidarfond.se',
+			url: 'test2-admin.solidar.se',
 			username: '__USERNAME__',
 			password: '__PASSWORD__' 
 		},
+		features: {
+			gitBranch: true,
+			remoteTail: true
+		}
 	}]
 };
