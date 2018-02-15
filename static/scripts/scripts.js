@@ -13,12 +13,18 @@ class App {
 		const environmentsConfig = [{
 				name: 'prod',
 				node: document.querySelector('#prod .content'),
+				unhandledContainer: document.querySelector('#prod .unhandledContainer'),
+				unhandledContent: document.querySelector('#prod .unhandledContent'),
+				unhandledContentToggle: document.querySelector('#prod .toggle-unhandled'),
 				search: document.querySelector('#prod .search'),
 				filter: document.querySelector('#prod .filter'),
 				header: document.querySelector('#prod .header')
 			}, {
 				name: 'demo2',
 				node: document.querySelector('#demo2 .content'),
+				unhandledContainer: document.querySelector('#demo2 .unhandledContainer'),
+				unhandledContent: document.querySelector('#demo2 .unhandledContent'),
+				unhandledContentToggle: document.querySelector('#demo2 .toggle-unhandled'),
 				search: document.querySelector('#demo2 .search'),
 				filter: document.querySelector('#demo2 .filter'),
 				header: document.querySelector('#demo2 .header')
@@ -31,16 +37,6 @@ class App {
 	}
 
 	initEvents() {
-		this.servers.forEach(server => {
-			server.search.addEventListener('keyup', e => {
-				server.errors.map(error => error.applySearchFilter({ search: server.search.value, typeFilter: server.filter.value }));
-			});
-
-			server.filter.addEventListener('change', _ => {
-				server.errors.map(error => error.applySearchFilter({ search: server.search.value, typeFilter: server.filter.value }));
-			}, false);
-		});
-
 		this.ws.onmessage = event => {
 			const data = JSON.parse(event.data);
 
@@ -54,8 +50,8 @@ class App {
 				server.consumeLogMessage(data.message);
 			} else if (data.type === 'gitBranch') {
 				server.gitBranch = data.message;
-			} else {
-				server.node.innerText += data.message;
+			} else if (data.type === 'unhandledLog') {
+				server.consumeUnhandledLogMessage(data.message);
 			}
 		};
 	}
@@ -68,13 +64,41 @@ class Server {
 		this.search = settings.search;
 		this.filter = settings.filter;
 		this.header = settings.header;
+		this.unhandledContentToggle = settings.unhandledContentToggle;
+		this.unhandledContent = settings.unhandledContent;
+		this.unhandledContainer = settings.unhandledContainer;
 		this.gitBranch = '';
 		this.buffer = '';
 		this.errors = new PhpErrors();
+
+		this.initEvents();
+	}
+
+	initEvents() {
+		this.search.addEventListener('keyup', e => {
+			this.errors.map(error => error.applySearchFilter({ search: server.search.value, typeFilter: server.filter.value }));
+		});
+
+		this.filter.addEventListener('change', _ => {
+			this.errors.map(error => error.applySearchFilter({ search: server.search.value, typeFilter: server.filter.value }));
+		}, false);
+
+		console.log(this);
+
+		this.unhandledContentToggle.addEventListener('click', _ => {
+			if (this.unhandledContainer.style.display === 'none') {
+				this.unhandledContentToggle.classList.add('active');
+				this.unhandledContainer.style.display = 'block';
+			} else {
+				this.unhandledContentToggle.classList.remove('active');
+				this.unhandledContainer.style.display = 'none';
+			}
+		});
 	}
 
 	populateSelect(arr) {
-		const options = arr.map(item => {
+		const unique = this.errors.map(item => item.type).filter((value, index, self) => self.indexOf(value) === index);
+		const options = unique.map(item => {
 			const element = document.createElement('option');
 			element.textContent = item;
 			element.value = item;
@@ -92,10 +116,11 @@ class Server {
 		messageJson.forEach(error => this.errors.push(new PhpError(error)));
 		this.errors.sort((a, b) => a.dateTime - b.dateTime);
 		this.errors.forEach(error => this.node.appendChild(error.node));
-		if (this.errors) {
-			const unique = this.errors.map(item => item.type).filter((value, index, self) => self.indexOf(value) === index);
-			this.populateSelect(unique);				
-		}
+		this.populateSelect();
+	}
+
+	consumeUnhandledLogMessage(message) {
+		this.unhandledContent.innerText = message;
 	}
 
 	set gitBranch(branch) {

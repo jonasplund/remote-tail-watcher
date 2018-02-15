@@ -1,3 +1,0 @@
-class LogParser {
-    constructor() {}
-}

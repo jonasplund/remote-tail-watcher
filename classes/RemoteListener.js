@@ -49,11 +49,7 @@ module.exports = class RemoteListener extends EventEmitter {
 						return reject('HTTP error while getting system info.', err);
 					}
 					const m = body.match(/<strong>Status<\/strong><br>(?:On branch|HEAD detached at) (.*)/);
-					if (m) {
-						return resolve(m[1]);					
-					} else {
-						return reject('Unable to find branch');
-					}
+					return m ? resolve(m[1]) : reject('Unable to find branch');
 				});
 			});
 		});

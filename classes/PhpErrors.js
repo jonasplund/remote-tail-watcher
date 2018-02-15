@@ -27,16 +27,13 @@ module.exports = class PhpErrors extends Array {
 				details: partialResult[3].trim(),
 				exceptionClass: exceptionClass
 			}); 
-			if (this.filter(item => {
-				return item.hash === error.hash
-			}).length === 0) {
+			if (this.filter(item => item.hash === error.hash).length === 0) {
 				this.push(error);
-			} else {
 			}
 		}
 		let unhandled = this.buffer;
-		this.forEach(item => unhandled = unhandled.replace(item, ''));
-		this.unhandled = unhandled;
+		this.forEach(item => unhandled = unhandled.replace(item.full, ''));
+		this.unhandled = unhandled.replace('remote-tail>>>', '').replace(/(<br>\n?)+/, '<br>').trim();
 	}
 
 	stringify() {
@@ -44,6 +41,8 @@ module.exports = class PhpErrors extends Array {
 	}
 
 	toObjectArray() {
-		return this.map(item => item.toObject());
+		const objArr = this.map(item => item.toObject());
+		objArr.unhandled = this.unhandled;
+		return objArr;
 	}
 }

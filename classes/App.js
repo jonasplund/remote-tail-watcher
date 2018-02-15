@@ -100,6 +100,11 @@ module.exports = class App {
 				message: listener.phpErrors.stringify(), 
 				type: 'log' 
 			}));
+			ws.send(JSON.stringify({
+				env: listener.name,
+				message: listener.phpErrors.unhandled,
+				type: 'unhandledLog'
+			}));
 			ws.send(JSON.stringify({ 
 				env: listener.name, 
 				message: listener.gitBranch, 
