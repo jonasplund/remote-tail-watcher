@@ -10,30 +10,39 @@ module.exports = class PhpErrors extends Array {
 
 	consume(message) {
 		this.buffer += message;
-		const regExp = /(\[\d{2}-[a-zA-Z]{3}-\d{4} \d{2}:\d{2}:\d{2})(?:.*\])\s*(<BB_ERROR(?:_[A-Z_0-9]+)?>)([^<]*)<\/BB_ERROR(?:_[A-Z_0-9]+)?>/g;
+		//const regExp = /(\[\d{2}-[a-zA-Z]{3}-\d{4} \d{2}:\d{2}:\d{2})(?:.*\])\s*(<BB_ERROR(?:_[A-Z_0-9 a-z]+)?>)((?:.|\n)*?)<\/BB_ERROR(?:_[A-Z_0-9 a-z]+)?>/g;
+		const regExp = /(\[\d{2}-[a-zA-Z]{3}-\d{4} \d{2}:\d{2}:\d{2})(?:.*?\])\s*(<BB_ERROR(?:_[A-Z_0-9a-z ]+)?>)(.*?)<\/BB_ERROR(?:_[A-Z_0-9a-z ]+)?>/gs;
 		let partialResult;
 		while ((partialResult = regExp.exec(this.buffer)) !== null) {
-			let exceptionClass;
+			if (!partialResult || !partialResult[0]) {
+				continue;
+			}
+			let exceptionClass, userName;
 			let type = partialResult[2].replace('<BB_ERROR_', '').replace('<BB_ERROR', 'UNCLASSIFIED').replace('>', '');
-			const m = partialResult[3].match(/Exception class: (.*)/);
+			let m = partialResult[3].match(/Exception class: (.*)/);
 			if (m) {
 				exceptionClass = m[1].split('\\');
 				exceptionClass = exceptionClass[exceptionClass.length - 1];
 			}
+			m = partialResult[3].match(/Uname: (.*)/);
+			if (m) {
+				userName = m[1];
+			}
 			const error = new PhpError({
+				type,
+				userName,
 				full: partialResult[0],
 				time: partialResult[1] + ']',
-				type: type,
 				details: partialResult[3].trim(),
 				exceptionClass: exceptionClass
-			}); 
+			});
 			if (this.filter(item => item.hash === error.hash).length === 0) {
 				this.push(error);
 			}
 		}
 		let unhandled = this.buffer;
 		this.forEach(item => unhandled = unhandled.replace(item.full, ''));
-		this.unhandled = unhandled.replace('remote-tail>>>', '').replace(/(<br>\n?)+/, '<br>').trim();
+		this.unhandled = unhandled.replace('remote-tail>>>', '').replace(/\n+/g, '\n').trim();
 	}
 
 	stringify() {
@@ -44,5 +53,13 @@ module.exports = class PhpErrors extends Array {
 		const objArr = this.map(item => item.toObject());
 		objArr.unhandled = this.unhandled;
 		return objArr;
+	}
+
+	getUnsent() {
+		return this.filter(item => !item.sent);
+	}
+
+	setAllAsSent() {
+		this.forEach(item => item.sent = true);
 	}
 }

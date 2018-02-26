@@ -13,7 +13,10 @@ module.exports = class App {
 		this.server = http.createServer(app);
 		this.wss = new WebSocket.Server({ 'server': this.server });
 
-		this.listeners = config.listeners.map(listenerConfig => new RemoteListener(listenerConfig));
+		this.listeners = config.
+			listeners.
+			filter(listenerConfig => listenerConfig.enabled).
+			map(listenerConfig => new RemoteListener(listenerConfig));
 	}
 
 	async setupListeners() {
@@ -79,18 +82,13 @@ module.exports = class App {
 		listener.setupTail();
 
 		listener.on('data', message => {
-			/*
-			this.phpErrors.consume(message);
-			this.broadcastJson({
-				env: this.phpErrors.stringify(),
-				message: 
-			*/
 			this.broadcastJson({
 				env: listener.name,
-				message: listener.buffer.toString(),
+				message: listener.phpErrors.getUnsent().stringify(),
 				type: 'log'
 			});
-		});		
+			listener.phpErrors.setAllAsSent();
+		});
 	}
 
 	sendInitialData(ws, listeners) {

@@ -12,7 +12,6 @@ module.exports = class RemoteListener extends EventEmitter {
 		this.admin = settings.admin;
 		this.port = settings.port || 1685;
 		this.features = settings.features || {};
-		this.buffer = '';
 		this.phpErrors = new PhpErrors();
 		this.tail = undefined;
 		this.gitBranch = undefined;
@@ -38,9 +37,9 @@ module.exports = class RemoteListener extends EventEmitter {
 				}
 				cookie = cookie[0];
 
-				options = { 
-					url: `https://${this.admin.url}/system/info`, 
-					headers: { 
+				options = {
+					url: `https://${this.admin.url}/system/info`,
+					headers: {
 						'cookie': cookie 
 					}
 				};
@@ -56,7 +55,10 @@ module.exports = class RemoteListener extends EventEmitter {
 	}
 
 	setupTail() {
-		this.tail = remoteTailClient.run(this.ipNumber, this.port);
+		this.tail = remoteTailClient.initiate(this.ipNumber, this.port);
+		this.tail.on('error', error => {
+			throw new Error(`Connection to ${this.name} (${this.ipNumber}:${this.port}) lost.`);
+		});
 		this.tail.on('data', message => {
 			this.phpErrors.consume(message);
 			this.emit('data', this.phpErrors.stringify());

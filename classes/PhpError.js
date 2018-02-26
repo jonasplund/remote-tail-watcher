@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const hash = crypto.createHash('sha256');
 
 module.exports = class PhpError {
 	constructor(data) {
@@ -9,10 +8,8 @@ module.exports = class PhpError {
 		this.type = data.type;
 		this.details = data.details;
 		this.exceptionClass = data.exceptionClass;
-		const userName = data.details.match(/Uname: (.*)/);
-		if (userName) {
-			this.userName = userName[1];
-		}
+		this.userName = data.userName;
+
 		let hash = crypto.createHash('sha256');
 		hash = hash.update(this.full);
 		hash = hash.digest('hex');
@@ -26,7 +23,8 @@ module.exports = class PhpError {
 			details: this.details,
 			exceptionClass: this.exceptionClass,
 			userName: this.userName,
-			hash: this.hash
+			hash: this.hash,
+			full: this.full
 		};
 	}
 
