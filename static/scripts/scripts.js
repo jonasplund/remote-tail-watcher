@@ -13,30 +13,19 @@ const MESSAGE_TYPES = {
 };
 
 const environmentsConfig = [{
-		name: 'prod',
-		base: document.querySelector('#prod')
+		name: 'prod'
 	}, {
-		name: 'demo2',
-		base: document.querySelector('#demo2')
+		name: 'demo2'
 	}
-].map(item => ({
-	name: item.name,
-	base: item.base,
-	node: item.base.querySelector('.content'),
-	unhandledContainer: item.base.querySelector('.unhandled-container'),
-	unhandledContent: item.base.querySelector('.unhandled-content'),
-	unhandledContentToggle: item.base.querySelector('.toggle-unhandled'),
-	search: item.base.querySelector('.search'),
-	filter: item.base.querySelector('.filter'),
-	header: item.base.querySelector('.header')
-}));
+];
 
 class App {
-	constructor() {
+	constructor(root) {
+		this.element = root;
 		this.inited = false;
 		this.ws = new WebSocket(location.origin.replace(/^https?/, 'ws'));
 
-		this.servers = environmentsConfig.map(env => new Server(env));
+		this.servers = environmentsConfig.map(env => new Server(env, this.element));
 
 		this.initEvents();
 	}
@@ -60,22 +49,37 @@ class App {
 }
 
 class Server {
-	constructor(settings) {
+	constructor(settings, parent) {
 		this.name = settings.name;
-		this.base = settings.base;
-		this.node = settings.node;
-		this.search = settings.search;
-		this.filter = settings.filter;
-		this.header = settings.header;
-		this.unhandledContentToggle = settings.unhandledContentToggle;
-		this.unhandledContent = settings.unhandledContent;
-		this.unhandledContainer = settings.unhandledContainer;
-		this.gitBranch = '';
-		this.errors = new PhpErrors();
+		this.parent = parent;
 
-		this.lastDate = 0;
+		this.errors = new PhpErrors();
+		this.lastDate = new Date(0);
+
+		this.renderTemplate();
+		this.gitBranch = '';
 
 		this.initEvents();
+	}
+
+	renderTemplate() {
+		const serverTemplate = document.querySelector('#server-template');
+		const templateContent = serverTemplate.content;
+		const clone = document.importNode(templateContent, true);
+
+		this.base = clone.querySelector('.server');
+		this.contentNode = clone.querySelector('.content');
+		this.unhandledContainer = clone.querySelector('.unhandled-container');
+		this.unhandledContent = clone.querySelector('.unhandled-content');
+		this.unhandledContentToggle = clone.querySelector('.toggle-unhandled');
+		this.search = clone.querySelector('.search');
+		this.filter = clone.querySelector('.filter');
+		this.header = clone.querySelector('.header');
+
+		this.header.textContent = this.name;
+		this.base.setAttribute('id', this.name);
+
+		this.parent.appendChild(clone);
 	}
 
 	initEvents() {
@@ -101,7 +105,7 @@ class Server {
 	}
 
 	clearList() {
-		this.node.querySelectorAll('li').forEach(li => this.node.removeChild(li));
+		this.contentNode.querySelectorAll('li').forEach(li => this.contentNode.removeChild(li));
 	}
 
 	consumeMessage(data) {
@@ -118,11 +122,13 @@ class Server {
 		JSON.parse(message).forEach(error => {
 			error = new PhpError(error, inited);
 			this.errors.push(error);
-			if (error.dateTime.getDate() > this.lastDate) {
-				this.insertDivider(error.dateTime);
+			if (error.errorDateTime.getDate() > this.lastDate.getDate() || 
+				error.errorDateTime.getMonth() > this.lastDate.getMonth() || 
+				error.errorDateTime.getYear() > this.lastDate.getYear()) {
+				this.insertDivider(error.errorDateTime);
 			}
-			this.lastDate = error.dateTime.getDate();
-			this.node.appendChild(error.node);
+			this.lastDate = error.errorDateTime;
+			this.contentNode.appendChild(error.node);
 		});
 		this.populateSelect();
 	}
@@ -143,11 +149,11 @@ class Server {
 		this.unhandledContent.innerText += message;
 	}
 
-	insertDivider(dateTime) {
+	insertDivider(errorDateTime) {
 		const dateHeader = document.createElement('li');
-		dateHeader.innerText = `[${dateTime.toLocaleString('sv-SE').substr(0,10)}]`;
+		dateHeader.innerText = `[${errorDateTime.toLocaleString('sv-SE').substr(0,10)}]`;
 		dateHeader.classList.add('date-header');
-		this.node.appendChild(dateHeader);
+		this.contentNode.appendChild(dateHeader);
 	} 
 
 	set gitBranch(branch) {
@@ -165,7 +171,8 @@ class PhpError {
 	constructor(data, inited) {
 		this.recievedTime = new Date();
 		this.full = data.full;
-		this.dateTime = new Date(data.dateTime);
+		console.log(data);
+		this.errorDateTime = new Date(data.errorDateTime);
 		this.type = data.type;
 		this.details = data.details;
 		this.exceptionClass = data.exceptionClass;
@@ -180,7 +187,8 @@ class PhpError {
 
 	createListElement() {
 		const li = document.createElement('li');
-		li.innerText = this.toString();
+		li.innerHTML = this.toString();
+		
 		this.detailsElement = document.createElement('pre');
 		this.detailsElement.style.display = 'none';
 		this.detailsElement.innerText = this.details;
@@ -198,7 +206,7 @@ class PhpError {
 	}
 
 	toString() {
-		return `[${this.dateTime.toLocaleString('sv-SE')}] ${this.type} ${this.exceptionClass ? this.exceptionClass : ''} ` + 
+		return `<span class="date">[${this.errorDateTime.toLocaleString('sv-SE')}]</span> ${this.type} ${this.exceptionClass ? this.exceptionClass : ''} ` + 
 			`${this.userName ? '[' + this.userName + ']' : ''}`;
 	}
 
@@ -319,5 +327,5 @@ class Beeper {
 }
 
 (function() {
-	window.remoteTailWatcher = new App();
+	window.remoteTailWatcher = new App(document.querySelector('#app'));
 })();

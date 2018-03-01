@@ -6,35 +6,23 @@
 	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-	<div id="wrapper">
-		<div id="prod" class="server">
-			<h2 class="header">Prod</h2>
-			<div class="filterbar">
-				<input type="text" class="search" placeholder="Search details" />
-				<select class="filter">
-    				<option value="" selected>Error type</option>
-				</select>
-				<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
-			</div>
-			<ul class="content"></ul>
-			<div class="unhandled-container" style="display: none">
-				<pre class="unhandled-content"></pre>
-			</div>
-		</div>
-		<div id="demo2" class="server">
-			<h2 class="header">Demo2</h2>
-			<div class="filterbar">
-				<input type="text" class="search" placeholder="Search details" />
-				<select class="filter">
-    				<option value="" selected>Error type</option>
-				</select>
-				<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
-			</div>
-			<ul class="content"></ul>
-			<div class="unhandled-container" style="display: none">
-				<pre class="unhandled-content"></pre>
-			</div>
-		</div>
+	<div id="app">
 	</div>
+	<template id="server-template">
+		<div class="server">
+			<h2 class="header"></h2>
+			<div class="filterbar">
+				<input type="text" class="search" placeholder="Search details" />
+				<select class="filter">
+					<option value="" selected>Error type</option>
+				</select>
+				<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
+			</div>
+			<ul class="content"></ul>
+			<div class="unhandled-container" style="display: none">
+				<pre class="unhandled-content"></pre>
+			</div>
+		</div>
+	</template>
 </body>
 </html>

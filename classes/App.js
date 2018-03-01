@@ -84,10 +84,10 @@ module.exports = class App {
 		listener.on('data', message => {
 			this.broadcastJson({
 				env: listener.name,
-				message: listener.phpErrors.getUnsent().stringify(),
+				message: listener.logErrors.getUnsent().stringify(),
 				type: 'log'
 			});
-			listener.phpErrors.setAllAsSent();
+			listener.logErrors.setAllAsSent();
 		});
 	}
 
@@ -95,12 +95,12 @@ module.exports = class App {
 		listeners.forEach(listener => {
 			ws.send(JSON.stringify({ 
 				env: listener.name, 
-				message: listener.phpErrors.stringify(), 
+				message: listener.logErrors.stringify(), 
 				type: 'log' 
 			}));
 			ws.send(JSON.stringify({
 				env: listener.name,
-				message: listener.phpErrors.unhandled,
+				message: listener.logErrors.unhandled,
 				type: 'unhandledLog'
 			}));
 			ws.send(JSON.stringify({ 

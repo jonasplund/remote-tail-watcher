@@ -1,7 +1,7 @@
 const request = require('request');
 const remoteTailClient = require('remote-tail/lib/Client.js');
 const EventEmitter = require('events');
-const PhpErrors = require('./PhpErrors');
+const LogErrors = require('./LogErrors');
 
 module.exports = class RemoteListener extends EventEmitter {
 	constructor(settings) {
@@ -12,7 +12,7 @@ module.exports = class RemoteListener extends EventEmitter {
 		this.admin = settings.admin;
 		this.port = settings.port || 1685;
 		this.features = settings.features || {};
-		this.phpErrors = new PhpErrors();
+		this.logErrors = new LogErrors();
 		this.tail = undefined;
 		this.gitBranch = undefined;
 	}
@@ -60,8 +60,8 @@ module.exports = class RemoteListener extends EventEmitter {
 			throw new Error(`Connection to ${this.name} (${this.ipNumber}:${this.port}) lost.`);
 		});
 		this.tail.on('data', message => {
-			this.phpErrors.consume(message);
-			this.emit('data', this.phpErrors.stringify());
+			this.logErrors.consume(message);
+			this.emit('data', this.logErrors.stringify());
 		});
 	}
 };

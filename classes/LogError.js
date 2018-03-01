@@ -1,10 +1,10 @@
 const crypto = require('crypto');
 
-module.exports = class PhpError {
+module.exports = class LogError {
 	constructor(data) {
 		const dateStr = data.time.replace(/[\[\]]/g, '');
 		this.full = data.full;
-		this.dateTime = new Date(dateStr);
+		this.errorDateTime = new Date(dateStr);
 		this.type = data.type;
 		this.details = data.details;
 		this.exceptionClass = data.exceptionClass;
@@ -18,7 +18,7 @@ module.exports = class PhpError {
 
 	toObject() {
 		return {
-			dateTime: this.dateTime,
+			errorDateTime: this.errorDateTime,
 			type: this.type,
 			details: this.details,
 			exceptionClass: this.exceptionClass,

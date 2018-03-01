@@ -1,6 +1,6 @@
-const PhpError = require('./PhpError');
+const LogError = require('./LogError');
 
-module.exports = class PhpErrors extends Array {
+module.exports = class LogErrors extends Array {
 	constructor(...args) {
 		super(...args);
 
@@ -28,7 +28,7 @@ module.exports = class PhpErrors extends Array {
 			if (m) {
 				userName = m[1];
 			}
-			const error = new PhpError({
+			const error = new LogError({
 				type,
 				userName,
 				full: partialResult[0],
@@ -50,9 +50,9 @@ module.exports = class PhpErrors extends Array {
 	}
 
 	toObjectArray() {
-		const objArr = this.map(item => item.toObject());
-		objArr.unhandled = this.unhandled;
-		return objArr;
+		const objectArray = this.map(item => item.toObject());
+		objectArray.unhandled = this.unhandled;
+		return objectArray;
 	}
 
 	getUnsent() {
