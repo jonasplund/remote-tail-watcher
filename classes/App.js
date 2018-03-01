@@ -20,9 +20,7 @@ module.exports = class App {
 	}
 
 	async setupListeners() {
-		for (let listener of this.listeners) {
-			await this.setupListener(listener);
-		}
+		await Promise.all(this.listeners.map(listener => this.setupListener(listener)));
 	}
 
 	async setupListener(listener) {
