@@ -1,4 +1,4 @@
-@keyframes newBlink {
+@keyframes new-blink {
   from {
   	background-color: transparent;
   }
@@ -18,8 +18,6 @@
 	--text-color-light: #EEE;
 	--text-color-subtile: #888;
 	--text-color-alert: #B71C1C;
-
-	--blue-gradient: linear-gradient(#44C, #33A, #44C);
 }
 
 html, body {
@@ -76,7 +74,7 @@ html, body {
 	background-color: var(--bg-color-alt);
 }
 .server .content>.log-error.new {
-	animation-name: newBlink;
+	animation-name: new-blink;
 	animation-duration: 1s;
 	animation-iteration-count: infinite;
 }
@@ -122,10 +120,10 @@ html, body {
 	display: flex;
 }
 
-.filterbar * {
+.filterbar>* {
 	flex: 1;
 }
-.filterbar *:not(:first-child) {
+.filterbar>*:not(:first-child) {
 	margin-left: 10px;
 }
 
@@ -139,14 +137,17 @@ html, body {
 	font-weight: bold;
 }
 .button.active {
-	background: var(--blue-gradient);
+	background: var(--bg-color-header);
 	color: white;
 }
 
 .date-header {
-	background: var(--bg-color-header) !important;
+	min-height: 20px;
+	line-height: 20px;
+	border-bottom: 1px solid #000;
+	padding: 5px;
+	background: var(--bg-color-header);
 	text-align: center;
 	font-weight: bold;
 	color: var(--text-color-light);
-	cursor: default !important;
 }
