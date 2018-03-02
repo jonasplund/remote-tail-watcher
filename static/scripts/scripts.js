@@ -157,7 +157,7 @@ class Server {
 	} 
 
 	set gitBranch(branch) {
-		this.header.innerText = `${this.name} [${branch}]`;
+		this.header.innerText = `${this.name} ${branch ? '[' + branch + ']' : ''}`;
 	}
 }
 
