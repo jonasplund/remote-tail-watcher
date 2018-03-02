@@ -12,11 +12,12 @@
 	--bg-color: #EEE;
 	--bg-color-alt: #DDD;
 	--bg-color-pre: #FFF;
+	--bg-color-header: #673AB7;
 
 	--text-color: #111;
 	--text-color-light: #EEE;
 	--text-color-subtile: #888;
-	--text-color-alert: #B00;
+	--text-color-alert: #B71C1C;
 
 	--blue-gradient: linear-gradient(#44C, #33A, #44C);
 }
@@ -47,7 +48,8 @@ html, body {
 .server>h2 {
 	text-align: center;
 	border-bottom: 1px solid black;
-	background-color: var(--bg-color);
+	background-color: var(--bg-color-header);
+	color: var(--text-color-light);
 	padding: 5px;
 	margin: 0;
 }
@@ -58,7 +60,7 @@ html, body {
 	margin: 0;
 }
 
-.server .content>li {
+.server .content>.log-error {
 	min-height: 20px;
 	line-height: 20px;
 	border-bottom: 1px solid #000;
@@ -67,18 +69,18 @@ html, body {
 	cursor: pointer;
 	transition: background-color 0.5s;
 }
-.server .content>li:first-child {
+.server .content>.log-error:first-child {
 	border-top: 1px solid black;
 }
-.server .content>li:nth-child(2n+1) {
+.server .content>.log-error:nth-child(2n+1) {
 	background-color: var(--bg-color-alt);
 }
-.server .content>li.new {
+.server .content>.log-error.new {
 	animation-name: newBlink;
 	animation-duration: 1s;
 	animation-iteration-count: infinite;
 }
-.server .content>li pre {
+.server .content>.log-error pre {
 	margin: 0;
 	overflow: hidden;
 	cursor: auto;
@@ -91,19 +93,28 @@ html, body {
 	overflow-x: auto;
 }
 
-.server .content>li.minor {
+.server .content>.log-error.minor {
 	color: var(--text-color-subtile);
 }
-.server .content>li.standard {
+.server .content>.log-error.standard {
 	color: #C4C;
 }
-.server .content>li.critical {
+.server .content>.log-error.critical {
 	color: var(--text-color-alert);
 	font-weight: bold;
 }
-.server .content>li .date {
+.server .content>.log-error .date {
 	color: var(--text-color);
 	font-weight: normal;
+}
+.log-error .dropdown-arrow {
+	transition: transform 0.3s;
+	display: inline-block;
+	float: right;
+	color: var(--text-color);
+}
+.log-error.open .dropdown-arrow {
+	transform: rotate(90deg);
 }
 
 .filterbar {
@@ -133,7 +144,7 @@ html, body {
 }
 
 .date-header {
-	background: var(--blue-gradient) !important;
+	background: var(--bg-color-header) !important;
 	text-align: center;
 	font-weight: bold;
 	color: var(--text-color-light);

@@ -17,19 +17,5 @@ module.exports = {
 			gitBranch: true,
 			remoteTail: true
 		}
-	}, {
-		name: 'demo2',
-		enabled: true,
-		ipNumber: '192.168.10.21',
-		port: 1685,
-		admin: {
-			url: 'test2-admin.solidar.se',
-			username: '__USERNAME__',
-			password: '__PASSWORD__' 
-		},
-		features: {
-			gitBranch: true,
-			remoteTail: true
-		}
 	}]
 };

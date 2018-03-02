@@ -53,7 +53,7 @@ class Server {
 		this.name = settings.name;
 		this.parent = parent;
 
-		this.errors = new PhpErrors();
+		this.errors = new LogErrors();
 		this.lastDate = new Date(0);
 
 		this.renderTemplate();
@@ -120,7 +120,7 @@ class Server {
 
 	consumeLogMessage(message, inited) {
 		JSON.parse(message).forEach(error => {
-			error = new PhpError(error, inited);
+			error = new LogError(error, inited);
 			this.errors.push(error);
 			if (error.errorDateTime.getDate() > this.lastDate.getDate() || 
 				error.errorDateTime.getMonth() > this.lastDate.getMonth() || 
@@ -161,17 +161,16 @@ class Server {
 	}
 }
 
-class PhpErrors extends Array {
+class LogErrors extends Array {
 	constructor(...args) {
 		super(...args);
 	}
 }
 
-class PhpError {
+class LogError {
 	constructor(data, inited) {
 		this.recievedTime = new Date();
 		this.full = data.full;
-		console.log(data);
 		this.errorDateTime = new Date(data.errorDateTime);
 		this.type = data.type;
 		this.details = data.details;
@@ -187,7 +186,9 @@ class PhpError {
 
 	createListElement() {
 		const li = document.createElement('li');
+		li.classList.add('log-error');
 		li.innerHTML = this.toString();
+		li.innerHTML += '<span class="dropdown-arrow">&#x25BA;</span>'
 		
 		this.detailsElement = document.createElement('pre');
 		this.detailsElement.style.display = 'none';
@@ -206,8 +207,8 @@ class PhpError {
 	}
 
 	toString() {
-		return `<span class="date">[${this.errorDateTime.toLocaleString('sv-SE')}]</span> ${this.type} ${this.exceptionClass ? this.exceptionClass : ''} ` + 
-			`${this.userName ? '[' + this.userName + ']' : ''}`;
+		return `<span class="date">[${this.errorDateTime.toLocaleString('sv-SE')}]</span> ${this.type} ` + 
+			`${this.exceptionClass ? this.exceptionClass : ''} ${this.userName ? '[' + this.userName + ']' : ''}`;
 	}
 
 	get isHidden() {
@@ -219,6 +220,7 @@ class PhpError {
 	}
 
 	expand(scroll = true) {
+		this.node.classList.add('open');
 		this.detailsElement.style.display = 'block';
 		if (scroll) {
 			this.node.scrollIntoView({ behavior: 'smooth' });
@@ -226,6 +228,7 @@ class PhpError {
 	}
 
 	unexpand() {
+		this.node.classList.remove('open')
 		this.detailsElement.style.display = 'none';
 	}
 

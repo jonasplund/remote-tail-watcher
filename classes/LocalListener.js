@@ -2,7 +2,7 @@ const request = require('request');
 const remoteTailClient = require('remote-tail/lib/Client.js');
 const EventEmitter = require('events');
 
-module.exports = class Remote extends EventEmitter {
+module.exports = class LocalListener extends EventEmitter {
 	constructor(settings) {
 		super();
 		this.name = settings.name;
