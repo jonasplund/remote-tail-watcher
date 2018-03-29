@@ -4,19 +4,34 @@
 	<title>Remote tail watcher</title>
 	<script src="scripts/scripts.js" defer="defer"></script>
 	<link rel="stylesheet" href="styles.css">
+	<link rel="import" href="/bower_components/polymer/polymer.html">
+	<link rel="import" href="/bower_components/paper-checkbox/paper-checkbox.html">
+	<link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+	<link rel="import" href="/bower_components/paper-item/paper-item.html">
+	<link rel="import" href="/bower_components/neon-animation/web-animations.html">
 </head>
 <body>
 	<div id="app">
 	</div>
+	<div id="settings">
+		<paper-checkbox type="checkbox" name="darkmode" id="darkmode"><label for="darkmode">Dark mode</label></paper-checkbox>
+		<paper-checkbox type="checkbox" name="mash" id="mash"><label for="mash">Mash</label></paper-checkbox>
+	</div>
 	<template id="server-template">
 		<div class="server">
-			<h2 class="header"></h2>
-			<div class="filterbar">
-				<input type="text" class="search" placeholder="Search details" />
-				<select class="filter">
-					<option value="" selected>Error type</option>
-				</select>
-				<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
+			<div class="top-row">
+				<h2 class="header"></h2>
+				<div class="filterbar">
+					<input type="text" class="search" placeholder="Search details" />
+					<paper-dropdown-menu class="filter-dropdown" label="Error type">
+						<paper-listbox class="filter" slot="dropdown-content" selected="0">
+							<paper-item>None</paper-item>
+						</paper-listbox>
+					</paper-dropdown-menu>
+
+					<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
+				</div>
 			</div>
 			<ul class="content"></ul>
 			<div class="unhandled-container" style="display: none">

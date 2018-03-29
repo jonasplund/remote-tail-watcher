@@ -1,9 +1,22 @@
+const MASH = {
+	INTERNAL_NAME: '__mash',
+	DISPLAY_NAME: 'Mashed view'
+};
+
 const IT_EMPLOYEES = ['Kristoffer Karlsson', 'Victor Jonsson', 'Jon Asplund', 'David Öberg'];
 
 const ERROR_LEVELS = {
-	MINOR: ['BANKID', 'SQL_SILENT', 'Muted failed service request', 'ACTIVATION_CODE'],
-	STANDARD: ['INDIVIDUAL_FOLKSAM_STATUS_10'],
-	CRITICAL: ['PAGE_MASTER_FATAL', 'SUMMARY', 'INVOICE_CREATOR', 'JAYCOM_PULL', 'FATAL', 'PROGNOSIS_GENERATOR']
+	MINOR: ['BANKID', 'SQL_SILENT', 'Muted failed service request', 'ACTIVATION_CODE', 'DUMP_RUNNER'],
+	STANDARD: ['INDIVIDUAL_FOLKSAM_STATUS_10', 'INDIVIDUAL_NORDNET_STATUS_30'],
+	CRITICAL: [
+		'PAGE_MASTER_FATAL', 
+		'SUMMARY', 
+		'INVOICE_CREATOR', 
+		'JAYCOM_PULL', 
+		'FATAL', 
+		'PROGNOSIS_GENERATOR', 
+		'FOLKSAM_COMMUNICATOR'
+	]
 };
 
 const MESSAGE_TYPES = {
@@ -20,12 +33,18 @@ const environmentsConfig = [{
 ];
 
 class App {
-	constructor(root) {
-		this.element = root;
+	constructor(settings) {
+		this.toggleDarkMode(false);
+		this.element = settings.root;
+		this.template = settings.template;
 		this.inited = false;
 		this.ws = new WebSocket(location.origin.replace(/^https?/, 'ws'));
 
-		this.servers = environmentsConfig.map(env => new Server(env, this.element));
+		this.servers = environmentsConfig.map(env => new Server(env, this.element, this.template));
+		if (settings.useMash) {
+			this.mash = new Server({ name: MASH.INTERNAL_NAME }, this.element, this.template);			
+		}
+		this.toggleMash(false);
 
 		this.initEvents();
 	}
@@ -44,13 +63,54 @@ class App {
 
 			data.inited = this.inited;
 			server.consumeMessage(data);
+			if (this.mash) {
+				this.mash.consumeMessage(data, server.name);				
+			}
 		};
+
+		document.querySelector('body').addEventListener('mousemove', _ => this.showSettings());
+		const darkmodeButton = document.querySelector('#darkmode');
+		darkmodeButton.addEventListener('change', _ => this.toggleDarkMode(darkmodeButton.checked));
+		const mashButton = document.querySelector('#mash');
+		mashButton.addEventListener('change', _ => this.toggleMash(mashButton.checked));
+	}
+
+	showSettings() {
+		const settingsElement = document.querySelector('#settings');
+		settingsElement.classList.add('visible');
+		clearTimeout(this.showSettingsTimeout);
+		this.showSettingsTimeout = setTimeout(_ => this.hideSettings(), 2000);
+	}
+
+	hideSettings() {
+		const settingsElement = document.querySelector('#settings');
+		settingsElement.classList.remove('visible');	
+	}
+
+	toggleDarkMode(darkMode) {
+		const rootNode = document.querySelector('html');
+		if (darkMode) {
+			rootNode.classList.add('dark');
+			rootNode.classList.remove('light');
+		} else  {
+			rootNode.classList.add('light');
+			rootNode.classList.remove('dark');
+		}
+	}
+
+	toggleMash(mash) {
+		if (mash) {
+			this.element.classList.add('mash');
+		} else  {
+			this.element.classList.remove('mash');
+		}
 	}
 }
 
 class Server {
-	constructor(settings, parent) {
+	constructor(settings, parent, template) {
 		this.name = settings.name;
+		this.template = template;
 		this.parent = parent;
 
 		this.errors = new LogErrors();
@@ -59,32 +119,14 @@ class Server {
 		this.renderTemplate();
 		this.gitBranch = '';
 
+		this.notifier = new Notifier();
+
 		this.initEvents();
-	}
-
-	renderTemplate() {
-		const serverTemplate = document.querySelector('#server-template');
-		const templateContent = serverTemplate.content;
-		const clone = document.importNode(templateContent, true);
-
-		this.base = clone.querySelector('.server');
-		this.contentNode = clone.querySelector('.content');
-		this.unhandledContainer = clone.querySelector('.unhandled-container');
-		this.unhandledContent = clone.querySelector('.unhandled-content');
-		this.unhandledContentToggle = clone.querySelector('.toggle-unhandled');
-		this.search = clone.querySelector('.search');
-		this.filter = clone.querySelector('.filter');
-		this.header = clone.querySelector('.header');
-
-		this.header.textContent = this.name;
-		this.base.setAttribute('id', this.name);
-
-		this.parent.appendChild(clone);
 	}
 
 	initEvents() {
 		this.search.addEventListener('keyup', _ => this.applySearchFilter(), false);
-		this.filter.addEventListener('change', _ => this.applySearchFilter(), false);
+		this.filter.addEventListener('selected-item-changed', _ => this.applySearchFilter(), false);
 
 		this.unhandledContentToggle.addEventListener('click', _ => {
 			if (this.unhandledContainer.style.display === 'none') {
@@ -97,10 +139,31 @@ class Server {
 		});
 	}
 
+	renderTemplate() {
+		const templateContent = this.template.content;
+		const clone = document.importNode(templateContent, true);
+
+		this.base = clone.querySelector('.server');
+		this.contentNode = clone.querySelector('.content');
+		this.unhandledContainer = clone.querySelector('.unhandled-container');
+		this.unhandledContent = clone.querySelector('.unhandled-content');
+		this.unhandledContentToggle = clone.querySelector('.toggle-unhandled');
+		this.search = clone.querySelector('.search');
+		this.filter = clone.querySelector('.filter');
+		this.filterDropdown = clone.querySelector('.filter-dropdown');
+		this.header = clone.querySelector('.header');
+
+		this.header.textContent = this.name === MASH.INTERNAL_NAME ? MASH.DISPLAY_NAME : this.name;
+		this.base.setAttribute('id', this.name);
+
+		this.parent.appendChild(clone);
+	}
+
 	applySearchFilter() {
+		console.log(this.filterDropdown.value);
 		this.errors.map(error => error.applySearchFilter({ 
 			search: this.search.value, 
-			typeFilter: this.filter.value
+			typeFilter: this.filterDropdown.value
 		}));
 	}
 
@@ -108,9 +171,9 @@ class Server {
 		this.contentNode.querySelectorAll('li').forEach(li => this.contentNode.removeChild(li));
 	}
 
-	consumeMessage(data) {
+	consumeMessage(data, origin) {
 		if (data.type === MESSAGE_TYPES.LOG) {
-			this.consumeLogMessage(data.message, data.inited);
+			this.consumeLogMessage(data.message, data.inited, origin);
 		} else if (data.type === MESSAGE_TYPES.GIT_BRANCH) {
 			this.gitBranch = data.message;
 		} else if (data.type === MESSAGE_TYPES.UNHANDLED_LOG) {
@@ -118,29 +181,50 @@ class Server {
 		}
 	}
 
-	consumeLogMessage(message, inited) {
+	consumeLogMessage(message, inited, origin = undefined) {
 		JSON.parse(message).forEach(error => {
-			error = new LogError(error, inited);
+			error = new LogError(error, inited, origin);
 			this.errors.push(error);
-			if (error.errorDateTime.getDate() > this.lastDate.getDate() || 
-				error.errorDateTime.getMonth() > this.lastDate.getMonth() || 
-				error.errorDateTime.getYear() > this.lastDate.getYear()) {
+			this.errors.sort((a, b) => a.errorDateTime - b.errorDateTime);
+			this.notifier.notify(this.name, error);
+			if (error.errorDateTime.getDate() > this.lastDate.getDate() &&
+				error.errorDateTime > this.lastDate) {
 				this.insertDivider(error.errorDateTime);
 			}
 			this.lastDate = error.errorDateTime;
-			this.contentNode.appendChild(error.node);
+			/*if (this.name === MASH.INTERNAL_NAME) {
+				let insertBeforeNode = null;
+				for (let i = 0; i < this.errors.length; i++) {
+					let currError = this.errors[i];
+					if (error.errorDateTime > currError.errorDateTime) {
+						//console.log(error.errorDateTime, currError.errorDateTime);
+						insertBeforeNode = currError.node;
+						break;
+					}
+				}
+				if (insertBeforeNode) {
+					this.contentNode.insertBefore(error.node, insertBeforeNode);
+				} else {
+					this.contentNode.appendChild(error.node);
+				}
+			} else { */
+				this.contentNode.appendChild(error.node);
+			//}
 		});
 		this.populateSelect();
 	}
 
 	populateSelect(arr) {
+		let i = 2;
+		while (this.filter.childNodes[i]) {
+			this.filter.removeChild(this.filter.childNodes[i++]);
+		}
 		this.errors.
 			map(item => item.type).
 			filter((value, index, self) => self.indexOf(value) === index).
 			forEach(item => {
-				const element = document.createElement('option');
+				const element = document.createElement('paper-item');
 				element.textContent = item;
-				element.value = item;
 				this.filter.appendChild(element);
 			});
 	}
@@ -151,13 +235,29 @@ class Server {
 
 	insertDivider(errorDateTime) {
 		const dateHeader = document.createElement('li');
-		dateHeader.innerText = `[${errorDateTime.toLocaleString('sv-SE').substr(0,10)}]`;
+		dateHeader.innerText = `[${this.formatDate(errorDateTime)}]`;
 		dateHeader.classList.add('date-header');
 		this.contentNode.appendChild(dateHeader);
-	} 
+	}
+
+	formatDate(errorDateTime) {
+		const nowDate = (new Date()).getDate();
+		const errorDate = errorDateTime.getDate();
+		let day;
+		if (errorDate === nowDate) {
+			day = 'Idag, ';
+		} else if (errorDate === nowDate - 1) {
+			day = 'Igår, ';
+		}
+		return (day || '') + errorDateTime.toLocaleString('sv-SE').substr(0, 10);
+	}
 
 	set gitBranch(branch) {
-		this.header.innerText = `${this.name} ${branch ? '[' + branch + ']' : ''}`;
+		if (this.name === MASH.INTERNAL_NAME) {
+			this.header.innerText = `${MASH.DISPLAY_NAME}`;
+		} else {
+			this.header.innerText = `${this.name} ${branch ? '[' + branch + ']' : ''}`;
+		}
 	}
 }
 
@@ -168,7 +268,8 @@ class LogErrors extends Array {
 }
 
 class LogError {
-	constructor(data, inited) {
+	constructor(data, inited, origin) {
+		this.origin = origin;
 		this.recievedTime = new Date();
 		this.full = data.full;
 		this.errorDateTime = new Date(data.errorDateTime);
@@ -207,8 +308,22 @@ class LogError {
 	}
 
 	toString() {
-		return `<span class="date">[${this.errorDateTime.toLocaleString('sv-SE')}]</span> ${this.type} ` + 
+		return `<span class="date">${this.origin ? '[' + this.origin + '] ' : ''}[${this.formatDate()}]</span> ${this.type} ` + 
 			`${this.exceptionClass ? this.exceptionClass : ''} ${this.userName ? '[' + this.userName + ']' : ''}`;
+	}
+
+	formatDate() {
+		let day;
+		const errorDate = this.errorDateTime.getDate();
+		const nowDate = (new Date()).getDate();
+		if (errorDate === nowDate) {
+			day = 'Idag';
+		} else if (errorDate === nowDate - 1) {
+			day = 'Igår';
+		} else {
+			day = this.errorDateTime.toLocaleString('sv-SE').substr(0, 10);
+		}
+        return day + ' ' + this.errorDateTime.toLocaleString('sv-SE').substr(10);
 	}
 
 	get isHidden() {
@@ -251,7 +366,7 @@ class LogError {
 		if (searchFilter.search !== '' && this.details.toLowerCase().indexOf(searchFilter.search.toLowerCase()) < 0) {
 			hide = true;
 		} 
-		if (searchFilter.typeFilter !== '' && this.type !== searchFilter.typeFilter) { 
+		if (searchFilter.typeFilter !== undefined && this.type !== searchFilter.typeFilter) { 
 			hide = true;
 		}
 		if (hide) {
@@ -329,6 +444,36 @@ class Beeper {
 	}
 }
 
+let notifierInstance = null;
+class Notifier {
+	constructor() {
+		if (!notifierInstance) {
+			notifierInstance = this;
+		}
+		this.mostRecentDateTime = new Date();
+		return notifierInstance;
+	}
+
+	async notify(server, logError) {
+		if (new Date() - this.mostRecentDateTime > 5000) {
+			const notificationText = `New error on ${server}:\n${logError.exceptionClass || logError.errorType}`;
+			if (Notification.permission === 'granted') {
+				new Notification(notificationText);
+				this.mostRecentDateTime = new Date();
+			} else if (Notification.permission !== 'denied') {
+				if (Notification.requestPermission() === 'granted') {
+					new Notification(notificationText);
+					this.mostRecentDateTime = new Date();
+				}
+			}
+		}
+	}
+}
+
 (function() {
-	window.remoteTailWatcher = new App(document.querySelector('#app'));
+	window.remoteTailWatcher = new App({
+		root: document.querySelector('#app'), 
+		template: document.querySelector('#server-template'),
+		useMash: true
+	});
 })();

@@ -12,7 +12,7 @@ module.exports = class RemoteListener extends EventEmitter {
 		this.admin = settings.admin;
 		this.port = settings.port || 1685;
 		this.features = settings.features || {};
-		this.logErrors = new LogErrors();
+		this.logErrors = new LogErrors(settings.maxLength);
 		this.tail = undefined;
 		this.gitBranch = undefined;
 	}
@@ -60,7 +60,7 @@ module.exports = class RemoteListener extends EventEmitter {
 			throw new Error(`Connection to ${this.name} (${this.ipNumber}:${this.port}) lost.`);
 		});
 		this.tail.on('data', message => {
-			this.logErrors.consume(message);
+			this.logErrors.consume(message, this.name === 'prod');
 			this.emit('data', this.logErrors.stringify());
 		});
 	}

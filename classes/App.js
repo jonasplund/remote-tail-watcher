@@ -10,6 +10,11 @@ module.exports = class App {
 		this.config = config;
 		
 		app.use(express.static('static'));
+
+		app.get('/remotes', (req, res) => {
+			res.send(this.listeners.map(listener => listener.name));
+		});
+
 		this.server = http.createServer(app);
 		this.wss = new WebSocket.Server({ 'server': this.server });
 
