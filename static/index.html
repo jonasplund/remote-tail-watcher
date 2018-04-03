@@ -9,6 +9,8 @@
 	<link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 	<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
 	<link rel="import" href="/bower_components/paper-item/paper-item.html">
+	<link rel="import" href="/bower_components/paper-input/paper-input.html">
+	<link rel="import" href="/bower_components/paper-button/paper-button.html">
 	<link rel="import" href="/bower_components/neon-animation/web-animations.html">
 </head>
 <body>
@@ -23,14 +25,14 @@
 			<div class="top-row">
 				<h2 class="header"></h2>
 				<div class="filterbar">
-					<input type="text" class="search" placeholder="Search details" />
+					<paper-input type="text" class="search" label="Search details"></paper-input>
 					<paper-dropdown-menu class="filter-dropdown" label="Error type">
 						<paper-listbox class="filter" slot="dropdown-content" selected="0">
 							<paper-item>None</paper-item>
 						</paper-listbox>
 					</paper-dropdown-menu>
 
-					<div class="button toggle-unhandled" title="Show unhandled log output">U</div>
+					<paper-button raised class="indigo button toggle-unhandled" title="Show unhandled log output">Unhandled</paper-button>
 				</div>
 			</div>
 			<ul class="content"></ul>

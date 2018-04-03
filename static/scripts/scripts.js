@@ -126,7 +126,7 @@ class Server {
 
 	initEvents() {
 		this.search.addEventListener('keyup', _ => this.applySearchFilter(), false);
-		this.filter.addEventListener('selected-item-changed', _ => this.applySearchFilter(), false);
+		this.filter.addEventListener('selected-item-changed', _ => this.applySearchFilter());
 
 		this.unhandledContentToggle.addEventListener('click', _ => {
 			if (this.unhandledContainer.style.display === 'none') {
@@ -160,11 +160,13 @@ class Server {
 	}
 
 	applySearchFilter() {
-		console.log(this.filterDropdown.value);
-		this.errors.map(error => error.applySearchFilter({ 
-			search: this.search.value, 
-			typeFilter: this.filterDropdown.value
-		}));
+		setTimeout(_ => {
+			const searchValue = this.search.value || '';
+			this.errors.map(error => error.applySearchFilter({
+				search: searchValue, 
+				typeFilter: this.filterDropdown.value
+			}));
+		}, 0);
 	}
 
 	clearList() {
@@ -363,10 +365,11 @@ class LogError {
 
 	applySearchFilter(searchFilter) {
 		let hide = false;
+		// console.log(searchFilter);
 		if (searchFilter.search !== '' && this.details.toLowerCase().indexOf(searchFilter.search.toLowerCase()) < 0) {
 			hide = true;
 		} 
-		if (searchFilter.typeFilter !== undefined && this.type !== searchFilter.typeFilter) { 
+		if (searchFilter.typeFilter !== 'None' && this.type !== searchFilter.typeFilter) { 
 			hide = true;
 		}
 		if (hide) {
