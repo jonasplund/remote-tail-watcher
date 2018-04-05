@@ -8,5 +8,5 @@ cd remote-tail-watcher
 npm install
 cp config.default.js config.js
 [edit config.js and add your remote-tail server]
-npm run
+npm run start
 ```

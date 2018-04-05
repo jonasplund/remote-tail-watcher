@@ -7,12 +7,12 @@ module.exports = class RemoteListener extends EventEmitter {
   constructor(settings) {
     super();
     this.name = settings.name;
-    this.ipNumber = settings.ipNumber;
-    this.hostname = settings.hostname;
-    this.admin = settings.admin;
+    this.ipNumber = settings.features.remoteTail.ipNumber;
+    this.hostname = settings.features.remoteTail.hostname;
+    this.admin = settings.features.gitBranch.admin;
     this.port = settings.port || 1685;
     this.features = settings.features || {};
-    this.logErrors = new LogErrors(settings.maxLength);
+    this.logErrors = new LogErrors(settings.features.remoteTail.maxLength);
     this.tail = undefined;
     this.gitBranch = undefined;
   }

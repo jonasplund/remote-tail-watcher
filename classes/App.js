@@ -29,14 +29,14 @@ module.exports = class App {
   }
 
   async setupListener(listener) {
-    if (listener.features.gitBranch) {
+    if (listener.features.gitBranch.enabled) {
       await this.pollGitBranch(listener);
       setInterval(_ => {
         this.pollGitBranch(listener); 
       }, this.config.pollTime * 1000);
     }
 
-    if (listener.features.remoteTail) {
+    if (listener.features.remoteTail.enabled) {
       await this.setupTail(listener);     
     }
   }
