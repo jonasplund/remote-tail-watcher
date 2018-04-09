@@ -30,7 +30,12 @@ module.exports = class App {
 
   async setupListener(listener) {
     if (listener.features.gitBranch.enabled) {
-      await this.pollGitBranch(listener);
+      try {
+        await this.pollGitBranch(listener);
+      } catch (e) {
+        console.log('Error while fetching git branch.\n', e);
+        return;
+      }
       setInterval(_ => {
         this.pollGitBranch(listener); 
       }, this.config.pollTime * 1000);
