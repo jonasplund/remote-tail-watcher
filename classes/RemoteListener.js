@@ -12,7 +12,7 @@ module.exports = class RemoteListener extends EventEmitter {
     this.admin = settings.features.gitBranch.admin;
     this.port = settings.port || 1685;
     this.features = settings.features || {};
-    this.logErrors = new LogErrors(settings.features.remoteTail.maxLength);
+    this.logErrors = new LogErrors(settings.features.remoteTail.maxLength, settings.features.remoteTail.parserRegex);
     this.tail = undefined;
     this.gitBranch = undefined;
   }

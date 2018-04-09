@@ -1,17 +1,18 @@
 const LogError = require('./LogError');
 
 module.exports = class LogErrors extends Array {
-  constructor(maxLength, ...args) {
+  constructor(maxLength, parserRegex, ...args) {
     super(...args);
 
     this.buffer = '';
     this.unhandled = '';
     this.maxLength = maxLength;
+    this.parserRegex = parserRegex;
   }
 
   consume(message) {
     this.buffer += message;
-    const regExp = /(\[\d{2}-[a-zA-Z]{3}-\d{4} \d{2}:\d{2}:\d{2})(?:(?:.|[\r\n])*?\])\s*?(<BB_ERROR(?:_[A-Z_0-9 a-z]+)?>)((?:.|[\r\n])*?)<\/BB_ERROR(?:_[A-Z_0-9 a-z]+)?>/g;
+    const regExp = this.regexifyString(this.parserRegex);    
     let partialResult;
     while ((partialResult = regExp.exec(this.buffer)) !== null) {
       if (!partialResult || !partialResult[0]) {
@@ -65,5 +66,10 @@ module.exports = class LogErrors extends Array {
 
   setAllAsSent() {
     this.forEach(item => item.sent = true);
+  }
+
+  regexifyString(regexString) {
+    const match = /\/(.*)?\/([a-z]*)?/.exec(regexString);
+    return new RegExp(match[1], match[2]);
   }
 }
