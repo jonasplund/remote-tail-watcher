@@ -6,7 +6,13 @@ const MASH = {
 const IT_EMPLOYEES = ['Kristoffer Karlsson', 'Victor Jonsson', 'Jon Asplund', 'David Öberg'];
 
 const ERROR_LEVELS = {
-  MINOR: ['BANKID', 'SQL_SILENT', 'Muted failed service request', 'ACTIVATION_CODE', 'DUMP_RUNNER'],
+  MINOR: ['BANKID', 
+    'SQL_SILENT', 
+    'Muted failed service request', 
+    'ACTIVATION_CODE', 
+    'DUMP_RUNNER',
+    'DUMMY_WEB_SERVICE_POST_ACTION'
+  ],
   STANDARD: ['INDIVIDUAL_FOLKSAM_STATUS_10', 'INDIVIDUAL_NORDNET_STATUS_30'],
   CRITICAL: [
     'PAGE_MASTER_FATAL', 
@@ -15,7 +21,9 @@ const ERROR_LEVELS = {
     'JAYCOM_PULL', 
     'FATAL', 
     'PROGNOSIS_GENERATOR', 
-    'FOLKSAM_COMMUNICATOR'
+    'FOLKSAM_COMMUNICATOR',
+    'FULLMAKTSKOLLEN_NOTIFICATION'
+    'GET ALL PORTFOLIOS'
   ]
 };
 
