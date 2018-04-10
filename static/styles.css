@@ -175,15 +175,11 @@ html * {
 	display: flex;
 }
 
-.filterbar>* {
+.filterbar>*:not(.button) {
 	flex: 1;
 }
 .filterbar>*:not(:first-child) {
 	margin-left: 10px;
-}
-
-.button {
-	flex:0.3;
 }
 .button.active {
 	background: var(--bg-color-header);

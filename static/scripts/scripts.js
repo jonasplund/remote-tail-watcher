@@ -128,6 +128,8 @@ class Server {
     this.search.addEventListener('keyup', _ => this.applySearchFilter(), false);
     this.filter.addEventListener('selected-item-changed', _ => this.applySearchFilter());
 
+    this.collapseButton.addEventListener('click', _ => this.unexpandAll());
+
     this.unhandledContentToggle.addEventListener('click', _ => {
       if (this.unhandledContainer.style.display === 'none') {
         this.unhandledContentToggle.classList.add('active');
@@ -152,6 +154,7 @@ class Server {
     this.filter = clone.querySelector('.filter');
     this.filterDropdown = clone.querySelector('.filter-dropdown');
     this.header = clone.querySelector('.header');
+    this.collapseButton = clone.querySelector('.collapse-button');
 
     this.header.textContent = this.name === MASH.INTERNAL_NAME ? MASH.DISPLAY_NAME : this.name;
     this.base.setAttribute('id', this.name);
@@ -252,6 +255,10 @@ class Server {
       day = 'Igår, ';
     }
     return (day || '') + errorDateTime.toLocaleString('sv-SE').substr(0, 10);
+  }
+
+  unexpandAll() {
+    this.errors.forEach(item => item.unexpand());
   }
 
   set gitBranch(branch) {
