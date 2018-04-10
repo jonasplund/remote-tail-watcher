@@ -73,9 +73,19 @@ class App {
 
   toggleMash(mash) {
     if (mash) {
+      const mashedList = this.generateMash();
+      this.mash.clearList();
+      mashedList.forEach(error => this.mash.addError(error));
       this.element.classList.add('mash');
     } else {
       this.element.classList.remove('mash');
     }
+  }
+
+  generateMash() {
+    return this.servers.
+      map(server => server.errors).
+      reduce((a, b) => [].concat(a, b)).
+      sort((a, b) => a.errorDateTime - b.errorDateTime);
   }
 }

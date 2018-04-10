@@ -123,6 +123,16 @@ class Server {
     this.populateSelect();
   }
 
+  addError(error) {
+    this.errors.push(error);
+    if (error.errorDateTime.getDate() > this.lastDate.getDate() &&
+      error.errorDateTime > this.lastDate) {
+      this.insertDivider(error.errorDateTime);
+    }
+    this.lastDate = error.errorDateTime;
+    this.contentNode.appendChild(error.node.cloneNode(true));
+  }
+
   populateSelect(arr) {
     let i = 2;
     while (this.filter.childNodes[i]) {
