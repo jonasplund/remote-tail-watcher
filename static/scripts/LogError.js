@@ -123,7 +123,7 @@ class LogError {
     if (searchFilter.search !== '' && this.details.toLowerCase().indexOf(searchFilter.search.toLowerCase()) < 0) {
       hide = true;
     } 
-    if (searchFilter.typeFilter !== 'None' && this.type !== searchFilter.typeFilter) { 
+    if (searchFilter.typeFilter !== 'Show all' && this.type !== searchFilter.typeFilter) { 
       hide = true;
     }
     if (hide) {
