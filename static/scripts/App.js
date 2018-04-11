@@ -1,7 +1,7 @@
 const environmentsConfig = [{
     name: 'prod'
   }, {
-    name: 'demo2'
+    name: 'demo'
   }
 ];
 
@@ -41,23 +41,10 @@ class App {
       }
     };
 
-    document.querySelector('body').addEventListener('mousemove', _ => this.showSettings());
     const darkmodeButton = document.querySelector('#darkmode');
     darkmodeButton.addEventListener('change', _ => this.toggleDarkMode(darkmodeButton.checked));
     const mashButton = document.querySelector('#mash');
     mashButton.addEventListener('change', _ => this.toggleMash(mashButton.checked));
-  }
-
-  showSettings() {
-    const settingsElement = document.querySelector('#settings');
-    settingsElement.classList.add('visible');
-    clearTimeout(this.showSettingsTimeout);
-    this.showSettingsTimeout = setTimeout(_ => this.hideSettings(), 2000);
-  }
-
-  hideSettings() {
-    const settingsElement = document.querySelector('#settings');
-    settingsElement.classList.remove('visible');  
   }
 
   toggleDarkMode(darkMode) {
